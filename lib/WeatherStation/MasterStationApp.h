@@ -27,7 +27,7 @@ public:
         uint8_t dispReset          = 9,
         unsigned long reportIntervalMs  = 2000,
         unsigned long backendIntervalMs = 15000,
-        unsigned long offlineTimeoutMs  = 10000
+        unsigned long offlineTimeoutMs  = 60000
     );
 
     void begin();

@@ -62,8 +62,8 @@ void MasterStationApp::begin() {
 void MasterStationApp::tick() {
     handleTouchToggle();
     handleRadioReceive();
-    handleBackendUpdate();
     handlePeriodicReport();
+    handleBackendUpdate();
 }
 
 void MasterStationApp::handleTouchToggle() {
@@ -170,28 +170,27 @@ void MasterStationApp::renderPacketOnDisplay(const WeatherPacket& packet) {
     }
     _display.drawStr(0, 15, buf);
 
-    snprintf(buf, sizeof(buf), "Rain: %s",
-             RainSensor::levelToText(static_cast<RainLevel>(packet.rainLevel)));
+    snprintf(buf, sizeof(buf), "Rain: %s  %s",
+             RainSensor::levelToText(static_cast<RainLevel>(packet.rainLevel)),
+             packet.isRaining ? "WET" : "DRY");
     _display.drawStr(0, 23, buf);
-
-    snprintf(buf, sizeof(buf), "Raining: %s", packet.isRaining ? "YES" : "NO");
-    _display.drawStr(0, 31, buf);
 
     unsigned long ageMs = millis() - _lastPacketReceivedAt;
     snprintf(buf, sizeof(buf), "seq:%u",
              (unsigned)packet.sequence, (unsigned long)(ageMs / 1000));
-    _display.drawStr(0, 39, buf);
+    _display.drawStr(0, 31, buf);
 
     snprintf(buf, sizeof(buf), "age:%lus", (unsigned long)(ageMs / 1000));
-    _display.drawStr(66, 39, buf);
+    _display.drawStr(66, 31, buf);
 
     snprintf(buf, sizeof(buf), "Intensity:%u", (unsigned)packet.rainIntensity);
-    _display.drawStr(0, 47, buf);
+    _display.drawStr(0, 39, buf);
 
     snprintf(buf, sizeof(buf), "pktTs:%lu", (unsigned long)packet.sourceTimestampMs / 1000UL);
-    _display.drawStr(0, 55, buf);
+    _display.drawStr(0, 47, buf);
 
-    _display.drawStr(0, 63, "Master online");
+    bool slaveOnline = (millis() - _lastPacketReceivedAt) <= _offlineTimeoutMs;
+    _display.drawStr(0, 55, slaveOnline ? "Online" : "Master online");
 
     _display.sendBuffer();
 }

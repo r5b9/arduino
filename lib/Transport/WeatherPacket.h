@@ -4,7 +4,8 @@
 #include <Arduino.h>
 
 // Shared sensor payload transported from slave to master.
-struct WeatherPacket {
+// packed: ensures identical byte layout on AVR (Nano) and ARM Renesas (UNO R4).
+struct __attribute__((packed)) WeatherPacket {
     uint8_t version;
     uint8_t sequence;
     unsigned long sourceTimestampMs;

@@ -4,15 +4,19 @@
 #include <GT24DipReceiver.h>
 #include "secrets.h"
 
-// D5: touch button (D6-D10 occupied by GMG12864-06D display)
-const int touchPin = 5;
-const unsigned long radioBaudRate = 57600;
+// D3: touch button
+// D5: GT-24-DIP CE  (nRF24L01)
+// D11: GT-24-DIP CSN
+// D12: GT-24-DIP MOSI
+// D13: GT-24-DIP SCK
+// D4:  GT-24-DIP MISO
+// Display: CS=10, RSE=9, RS=8, SCL=7, SI=6
+const int touchPin = 3;
 
 WiFiConnection wifiConnection(ssid, password);
 ThingSpeakBackend tsBackend(wifiConnection, channelID, writeAPIKey);
-GT24DipReceiver radioReceiver(Serial1, radioBaudRate);
+GT24DipReceiver radioReceiver; // CE=5, CSN=11, SCK=13, MOSI=12, MISO=4 (defaults)
 
-// Display wiring: CS=10, RSE=9, RS=8, SCL=7, SI=6 (matches MasterStationApp defaults)
 MasterStationApp app(
     touchPin,
     &radioReceiver,

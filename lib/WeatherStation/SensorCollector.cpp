@@ -50,7 +50,11 @@ WeatherPacket SensorCollector::readPacket() {
     packet.isRaining = rain.isRaining;
 
     bool pressureValid = false;
-    packet.climateValid = readClimate(packet.temperature, packet.humidity, packet.pressure, pressureValid);
+    float temperature = NAN, humidity = NAN, pressure = NAN;
+    packet.climateValid = readClimate(temperature, humidity, pressure, pressureValid);
+    packet.temperature  = temperature;
+    packet.humidity     = humidity;
+    packet.pressure     = pressure;
     packet.pressureValid = pressureValid;
 
     return packet;

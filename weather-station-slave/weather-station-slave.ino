@@ -1,7 +1,6 @@
 #include <Sensors.h>
 #include <WeatherPacket.h>
 #include <ML01DP5Transmitter.h>
-#include <SoftwareSerial.h>
 
 namespace {
 
@@ -14,17 +13,16 @@ const uint8_t bmp580Address = BMP5XX_DEFAULT_ADDRESS;
 const float stationElevationMeters = 129.0f;
 const unsigned long reportIntervalMs = 2000;
 const unsigned long climateRefreshIntervalMs = 5000;
-const unsigned long radioBaudRate = 57600;
 const unsigned long debugBaudRate = 115200;
-const uint8_t radioRxPin = 8;
-const uint8_t radioTxPin = 9;
+// nRF24L01 SPI: MOSI=D11, MISO=D12, SCK=D13 (hardware SPI), CE=D9, CSN=D10
+const uint8_t radioCePin  = 9;
+const uint8_t radioCsnPin = 10;
 
 RainSensor rainSensor("RainDigital", rainDigitalPin, "RainAnalog", rainAnalogPin);
 Sht3xSensor temperatureSensor("Temperature", sht3xAddress, SHT3X_TEMPERATURE_C);
 Sht3xSensor humiditySensor("Humidity", sht3xAddress, SHT3X_HUMIDITY);
 Bmp580PressureSensor pressureSensor("Pressure", bmp580Address);
-SoftwareSerial radioSerial(radioRxPin, radioTxPin);
-ML01DP5Transmitter radio(radioSerial, radioBaudRate);
+ML01DP5Transmitter radio(radioCePin, radioCsnPin);
 unsigned long lastReportAt = 0;
 unsigned long lastClimateAt = 0;
 float lastTemperature = NAN;
@@ -36,20 +34,6 @@ uint8_t sequence = 0;
 
 void debugLog(const __FlashStringHelper* message) {
     Serial.println(message);
-}
-
-void debugFrameHex(const uint8_t* frame, size_t frameSize) {
-    Serial.print(F("frame="));
-    for (size_t i = 0; i < frameSize; ++i) {
-        if (frame[i] < 0x10) {
-            Serial.print('0');
-        }
-        Serial.print(frame[i], HEX);
-        if (i + 1 < frameSize) {
-            Serial.print(' ');
-        }
-    }
-    Serial.println();
 }
 
 void debugPacket(const WeatherPacket& packet, const ML01DP5Transmitter::TxDebugInfo& tx) {
@@ -73,21 +57,8 @@ void debugPacket(const WeatherPacket& packet, const ML01DP5Transmitter::TxDebugI
     Serial.print(packet.isRaining ? F("wet") : F("dry"));
     Serial.print(F(" send="));
     Serial.print(tx.sendOk ? F("ok") : F("fail"));
-    Serial.print(F(" enc="));
-    Serial.print(tx.encodeOk ? F("ok") : F("fail"));
-    Serial.print(F(" bytes="));
-    Serial.print(tx.written);
-    Serial.print('/');
-    Serial.print(tx.frameSize);
-    Serial.print(F(" cksum=0x"));
-    if (tx.checksum < 0x10) {
-        Serial.print('0');
-    }
-    Serial.println(tx.checksum, HEX);
-
-    if (tx.encodeOk && tx.frameSize > 0 && tx.frameSize <= sizeof(tx.frame)) {
-        debugFrameHex(tx.frame, tx.frameSize);
-    }
+    Serial.print(F(" payload="));
+    Serial.println(tx.payloadSize);
 }
 
 float adjustPressureToSeaLevel(float stationPressureHpa) {
@@ -169,10 +140,10 @@ bool readClimate(float& temperature, float& humidity, float& pressure, bool& pre
 void setup() {
     Serial.begin(debugBaudRate);
     debugLog(F("slave boot"));
-    Serial.print(F("radio serial rx="));
-    Serial.print(radioRxPin);
-    Serial.print(F(" tx="));
-    Serial.println(radioTxPin);
+    Serial.print(F("radio CE="));
+    Serial.print(radioCePin);
+    Serial.print(F(" CSN="));
+    Serial.println(radioCsnPin);
 
     // Temporary: disable rain sensor hardware invocation while keeping implementation in code.
     // rainSensor.begin();
