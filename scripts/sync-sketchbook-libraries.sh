@@ -15,6 +15,6 @@ libraries_root="${sketchbook_root}/libraries"
 
 mkdir -p "${libraries_root}"
 
-for lib_dir in Backends Connectivity Logger Sensors WeatherStation; do
+for lib_dir in Backends Connectivity Logger Radio Sensors Transport WeatherStation; do
     ln -sfn "${repo_root}/lib/${lib_dir}" "${libraries_root}/${lib_dir}"
 done

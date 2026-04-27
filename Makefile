@@ -10,7 +10,7 @@ SKETCH ?= weather-station
 SKETCHBOOK_ROOT ?= $(shell if [ -n "$$ARDUINO_SKETCHBOOK_PATH" ]; then printf '%s' "$$ARDUINO_SKETCHBOOK_PATH"; elif [ -f "$$HOME/.arduino15/preferences.txt" ]; then sed -n 's/^sketchbook\.path=//p' "$$HOME/.arduino15/preferences.txt" | tail -n 1; else printf '%s' "$$HOME/Arduino"; fi)
 SKETCHBOOK_LIBS ?= $(if $(strip $(SKETCHBOOK_ROOT)),$(SKETCHBOOK_ROOT)/libraries,$(HOME)/Arduino/libraries)
 
-.PHONY: help ensure-cli cli-install core-install deps bootstrap kill-port build upload deploy deploy-live monitor ci clean
+.PHONY: help ensure-cli cli-install core-install deps bootstrap kill-port build upload deploy deploy-live monitor ci clean build-master build-slave upload-master upload-slave deploy-master deploy-slave
 
 help:
 	@echo "Targets:"
@@ -21,6 +21,8 @@ help:
 	@echo "  make deploy-live            Build + upload + serial monitor"
 	@echo "  make monitor                Open serial monitor"
 	@echo "  make ci [SKETCH=path]       Fresh-container flow: bootstrap + build"
+	@echo "  make build-master           Compile UNO R4 master sketch"
+	@echo "  make build-slave            Compile Nano slave sketch"
 	@echo "Variables: FQBN, CORE, PORT, BAUD, SKETCH, ARDUINO_CLI"
 
 ensure-cli:
@@ -67,6 +69,24 @@ monitor:
 	@$(ARDUINO_CLI) monitor -p $(PORT) --config baudrate=$(BAUD)
 
 ci: bootstrap build
+
+build-master:
+	@$(MAKE) build SKETCH=weather-station-master FQBN=arduino:renesas_uno:unor4wifi
+
+build-slave:
+	@$(MAKE) build SKETCH=weather-station-slave FQBN=arduino:avr:nano
+
+upload-master:
+	@$(MAKE) upload SKETCH=weather-station-master FQBN=arduino:renesas_uno:unor4wifi
+
+upload-slave:
+	@$(MAKE) upload SKETCH=weather-station-slave FQBN=arduino:avr:nano
+
+deploy-master:
+	@$(MAKE) deploy SKETCH=weather-station-master FQBN=arduino:renesas_uno:unor4wifi
+
+deploy-slave:
+	@$(MAKE) deploy SKETCH=weather-station-slave FQBN=arduino:avr:nano
 
 clean:
 	@rm -rf ./.arduino-ci-build

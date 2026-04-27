@@ -5,6 +5,8 @@
 #include <LiquidCrystal_I2C.h>
 #include <Sensors.h>
 #include <IBackend.h>
+#include <CloudPublisher.h>
+#include <SensorCollector.h>
 
 class WeatherStationApp {
 public:
@@ -30,32 +32,19 @@ private:
     void handleTouchToggle();
     void handlePeriodicReport();
     void handleBackendUpdate();
-    bool readClimate(float& temperature, float& humidity, float& pressure);
-    float adjustPressureToSeaLevel(float stationPressureHpa) const;
-    float convertPressureToMmHg(float pressureHpa) const;
-    void logRainReport(const RainReading& rain);
-    void renderRainOnLcd(const RainReading& rain, float pressure);
+    void logRainReport(const WeatherPacket& packet);
+    void renderRainOnLcd(const WeatherPacket& packet);
 
     unsigned long _lastReport;
-    unsigned long _lastBackendUpdate;
-    unsigned long _lastEnvironmentRead;
-    unsigned long _environmentRefreshIntervalMs;
     unsigned long _reportIntervalMs;
-    unsigned long _backendIntervalMs;
     bool _isDisplayOn;
-    bool _hasEnvironmentReading;
-    float _lastTemperature;
-    float _lastHumidity;
-    float _lastPressure;
-    float _stationElevationMeters;
+    bool _hasPacket;
+    WeatherPacket _lastPacket;
 
     LiquidCrystal_I2C _lcd;
-    RainSensor _rainSensor;
     TouchSensor _touchButton;
-    Sht3xSensor _temperatureSensor;
-    Sht3xSensor _humiditySensor;
-    Bmp580PressureSensor _pressureSensor;
-    IBackend* _backend;
+    SensorCollector _collector;
+    CloudPublisher _publisher;
 };
 
 #endif

@@ -5,9 +5,13 @@ This repository contains an Arduino weather-station sketch and shared local libr
 ## Project Layout
 
 - `weather-station/weather-station.ino` - main sketch (rain sensor + LCD + touch backlight control)
+- `weather-station-master/weather-station-master.ino` - split master sketch (UNO R4 WiFi)
+- `weather-station-slave/weather-station-slave.ino` - split slave sketch (Nano)
 - `lib/Sensors/` - shared sensor abstractions (`AnalogSensor`, `DigitalSensor`, `TouchSensor`, `RainSensor`)
 - `lib/Connectivity/` - WiFi connection handling shared by backends
 - `lib/Logger/` - shared serial logger abstraction with log levels
+- `lib/Transport/` - shared weather packet contract between slave and master
+- `lib/Radio/` - radio transport interfaces for transmitter/receiver adapters
 - `Makefile` - bootstrap, build, upload, monitor, and CI workflow
 
 ## Hardware
@@ -34,6 +38,13 @@ This repository contains an Arduino weather-station sketch and shared local libr
 - Writes structured logs to serial at `115200` baud.
 - Publishes temperature, humidity, rain intensity, and sea-level-adjusted pressure in `mmHg` to ThingSpeak when a backend is configured.
 
+Split-role behavior:
+
+- Master sketch (`weather-station-master`) receives weather packets from radio transport, renders LCD/touch UI, and publishes to ThingSpeak using the existing field mapping.
+- Slave sketch (`weather-station-slave`) reads local sensors and transmits framed weather packets over radio transport.
+- Current radio adapter implementation uses framed UART transport as a hardware-agnostic baseline while GT-24-DIP / ML01DP5 module-specific drivers are integrated.
+- Slave sensor wiring is intentionally unchanged from the legacy UNO wiring: rain digital `D2`, rain analog `A0`, SHT3X on I2C `0x44`, BMP580 on I2C default address (`0x46`).
+
 ## Dependencies
 
 Installed by `make deps` / `make bootstrap`:
@@ -55,6 +66,14 @@ make bootstrap
 
 # Build sketch
 make build SKETCH=weather-station
+
+# Build split master/slave sketches
+make build-master
+make build-slave
+
+# Upload split sketches
+make upload-master PORT=/dev/ttyACM0
+make upload-slave PORT=/dev/ttyUSB0
 
 # Upload sketch
 make deploy SKETCH=weather-station PORT=/dev/ttyACM0
