@@ -47,7 +47,13 @@ private:
     bool _isDisplayOn;
     bool _hasPacket;
     bool _hasSequence;
+    bool _hasTempTrend;
+    bool _hasHumidityTrend;
+    bool _hasPressureTrend;
     uint8_t _lastSequence;
+    float _prevTemperature;
+    float _prevHumidity;
+    float _prevPressure;
     WeatherPacket _lastPacket;
 
     U8G2_ST7565_JLX12864_F_4W_SW_SPI _display;
