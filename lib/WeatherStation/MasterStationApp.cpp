@@ -41,7 +41,7 @@ void MasterStationApp::begin() {
 
     _display.begin();
     _display.setContrast(170);
-    _display.sendF("c", 0xA6); // Normal display mode (white background, dark pixels)
+    _display.sendF("c", 0xA6); // Normal mode: dark background with light pixels on this panel.
     _display.setDrawColor(1);
     _display.setFontMode(1);
 
@@ -175,19 +175,11 @@ void MasterStationApp::renderPacketOnDisplay(const WeatherPacket& packet) {
              packet.isRaining ? "WET" : "DRY");
     _display.drawStr(0, 23, buf);
 
-    unsigned long ageMs = millis() - _lastPacketReceivedAt;
-    snprintf(buf, sizeof(buf), "seq:%u",
-             (unsigned)packet.sequence, (unsigned long)(ageMs / 1000));
+    snprintf(buf, sizeof(buf), "seq:%u", (unsigned)packet.sequence);
     _display.drawStr(0, 31, buf);
-
-    snprintf(buf, sizeof(buf), "age:%lus", (unsigned long)(ageMs / 1000));
-    _display.drawStr(66, 31, buf);
 
     snprintf(buf, sizeof(buf), "Intensity:%u", (unsigned)packet.rainIntensity);
     _display.drawStr(0, 39, buf);
-
-    snprintf(buf, sizeof(buf), "pktTs:%lu", (unsigned long)packet.sourceTimestampMs / 1000UL);
-    _display.drawStr(0, 47, buf);
 
     bool slaveOnline = (millis() - _lastPacketReceivedAt) <= _offlineTimeoutMs;
     _display.drawStr(0, 55, slaveOnline ? "Online" : "Master online");
