@@ -78,6 +78,17 @@ const unsigned long DISPLAY_OFFLINE_TIMEOUT_MS = 10000; // 10 seconds
 // Display power toggle pin (capacitive touch sensor)
 const int DISPLAY_POWER_PIN = 3;
 
+// Turn display and backlight off after this much touch inactivity (milliseconds).
+const unsigned long DISPLAY_AUTO_OFF_TIMEOUT_MS = 20000; // 20 seconds
+
+// Optional display backlight control pin.
+// Set to a valid GPIO if panel LED pin is wired to MCU, or -1 if tied directly to VCC.
+const int DISPLAY_BACKLIGHT_PIN = 2;
+
+// Backlight polarity for DISPLAY_BACKLIGHT_PIN.
+// true: HIGH = backlight ON, false: LOW = backlight ON.
+const bool DISPLAY_BACKLIGHT_ACTIVE_HIGH = true;
+
 // --- WiFi Configuration ---
 // Load from secrets.h (see weather-station-master/secrets.h)
 // Requires: ssid, password, channelID, writeAPIKey

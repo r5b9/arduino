@@ -12,6 +12,9 @@
 
 class MasterStationApp {
 public:
+    static const uint16_t METRIC_HISTORY_POINTS = 288;
+    static const uint8_t METRIC_COARSE_POINTS = 24;
+
     // Display wiring (GMG12864-06D via software SPI):
     //   dispClk  = SCL = D7
     //   dispData = SI  = D6
@@ -36,16 +39,23 @@ public:
     void tick();
 
 private:
+    void setDisplayPowerState(bool enabled, bool showToast);
+    void handleDisplayAutoOffTimeout();
     void handleTouchToggle();
     void handleRadioReceive();
     void handleBackendUpdate();
     void handlePeriodicReport();
     void renderPacketOnDisplay(const WeatherPacket& packet);
+    void clearMetricHistory();
+    void updateMetricHistory(const WeatherPacket& packet, float dewPointC, bool dewPointValid);
 
     unsigned long _lastReport;
+    unsigned long _lastDisplayActivityAt;
     unsigned long _reportIntervalMs;
     unsigned long _lastPacketReceivedAt;
     unsigned long _offlineTimeoutMs;
+    bool _historyInitialized;
+    uint16_t _historyHead;
     bool _isDisplayOn;
     bool _hasPacket;
     bool _hasSequence;
@@ -53,6 +63,10 @@ private:
     bool _hasHumidityTrend;
     bool _hasPressureTrend;
     bool _hasDewPointTrend;
+    bool _hasTempScale;
+    bool _hasHumidityScale;
+    bool _hasPressureScale;
+    bool _hasDewPointScale;
     int8_t _lastTempTrendDirection;
     int8_t _lastHumidityTrendDirection;
     int8_t _lastPressureTrendDirection;
@@ -66,6 +80,22 @@ private:
     float _prevHumidity;
     float _prevPressure;
     float _prevDewPoint;
+    float _tempScaleMin;
+    float _tempScaleMax;
+    float _humidityScaleMin;
+    float _humidityScaleMax;
+    float _pressureScaleMin;
+    float _pressureScaleMax;
+    float _dewPointScaleMin;
+    float _dewPointScaleMax;
+    float _tempHistory[METRIC_HISTORY_POINTS];
+    float _humidityHistory[METRIC_HISTORY_POINTS];
+    float _pressureHistory[METRIC_HISTORY_POINTS];
+    float _dewPointHistory[METRIC_HISTORY_POINTS];
+    bool _tempHistoryValid[METRIC_HISTORY_POINTS];
+    bool _humidityHistoryValid[METRIC_HISTORY_POINTS];
+    bool _pressureHistoryValid[METRIC_HISTORY_POINTS];
+    bool _dewPointHistoryValid[METRIC_HISTORY_POINTS];
     WeatherPacket _lastPacket;
 
     U8G2_ST7565_JLX12864_F_4W_SW_SPI _display;
